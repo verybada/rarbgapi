@@ -16,5 +16,8 @@ setup(
     extras_require={
         'travis': ['pep8', 'pylint']
     },
-    url='https://github.com/verybada/rarbgapi/'
+    url='https://github.com/verybada/rarbgapi/',
+    entry_points={
+        'console_scripts': ['rarbgapi=rarbgapi.__main__:main']
+    }
 )
