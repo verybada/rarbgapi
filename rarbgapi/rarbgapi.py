@@ -96,7 +96,7 @@ class _RarbgAPIv2(object):
             'token': token
         }
         for key, value in kwargs.iteritems():
-            if not key in ['string', 'sort', 'limit', 'category', 'format']:
+            if key not in ['string', 'sort', 'limit', 'category', 'format']:
                 raise ValueError('unsupported parameter %s' % key)
 
             if value is None:
