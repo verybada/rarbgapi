@@ -13,4 +13,7 @@ setup(
     install_requires=[
         'requests'
     ],
+    extras_require={
+        'travis': ['pep8', 'pylint']
+    }
 )
