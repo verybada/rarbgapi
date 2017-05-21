@@ -20,7 +20,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--category-table', help='Get a list of category index',
                         action='store_true')
-    parser.add_argument('--string', help='Query string')
+    parser.add_argument('--search-string', help='Query string')
     parser.add_argument('--sort',
                         choices=['seeders', 'leechers', 'last'],
                         help='How torrents will be sorted')
@@ -38,7 +38,7 @@ def main():
         logging.basicConfig(output=sys.stdout, level=logging.DEBUG)
 
     client = RarbgAPI()
-    torrents = client.search(string=args.string, sort=args.sort,
+    torrents = client.search(search_string=args.search_string, sort=args.sort,
                              limit=args.limit, category=args.category)
     for torrent in torrents:
         print "%s(%s) %s" % (torrent.filename, torrent.category,

@@ -97,7 +97,8 @@ class _RarbgAPIv2(object):
             'token': token
         }
         for key, value in kwargs.iteritems():
-            if key not in ['string', 'sort', 'limit', 'category', 'format_']:
+            if key not in ['search_string', 'sort', 'limit',
+                           'category', 'format_']:
                 raise ValueError('unsupported parameter %s' % key)
 
             if value is None:
@@ -180,14 +181,16 @@ class RarbgAPI(_RarbgAPIv2):
 
     @request
     # pylint: disable=too-many-arguments
-    def list(self, string=None, sort=None, limit=None,
+    def list(self, search_string=None, sort=None, limit=None,
              category=None, format_=None, **kwargs):
-        return self._query('list', string=string, sort=sort, limit=limit,
-                           category=category, format_=format_, **kwargs)
+        return self._query('list', search_string=search_string, sort=sort,
+                           limit=limit, category=category, format_=format_,
+                           **kwargs)
 
     @request
     # pylint: disable=too-many-arguments
-    def search(self, string=None, sort=None, limit=None,
+    def search(self, search_string=None, sort=None, limit=None,
                category=None, format_=None, **kwargs):
-        return self._query('search', string=string, sort=sort, limit=limit,
-                           category=category, format_=format_, **kwargs)
+        return self._query('search', search_string=search_string,
+                           sort=sort, limit=limit, category=category,
+                           format_=format_, **kwargs)
