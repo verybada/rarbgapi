@@ -177,13 +177,13 @@ class RarbgAPI(_RarbgAPIv2):
     @request
     # pylint: disable=too-many-arguments
     def list(self, string=None, sort=None, limit=None,
-             category=None, format_=None):
+             category=None, format_=None, **kwargs):
         return self._query('list', string=string, sort=sort, limit=limit,
-                           category=category, format_=format_)
+                           category=category, format_=format_, **kwargs)
 
     @request
     # pylint: disable=too-many-arguments
     def search(self, string=None, sort=None, limit=None,
-               category=None, format_=None):
+               category=None, format_=None, **kwargs):
         return self._query('search', string=string, sort=sort, limit=limit,
-                           category=category, format_=format_)
+                           category=category, format_=format_, **kwargs)
