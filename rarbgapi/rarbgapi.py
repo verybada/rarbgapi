@@ -1,4 +1,5 @@
 import time
+import logging
 
 import requests
 
@@ -127,7 +128,9 @@ def request(func):
                 resp = self._get_token()
                 content = resp.json()
                 self._token = content['token']
-            except Exception:  # pylint: disable=broad-except
+                self._log.debug('token=%s', self._token)
+            except Exception as exp:  # pylint: disable=broad-except
+                self._log.exception('Unexpected exceptin %s', exp)
                 retries -= 1
                 if not retries:
                     raise
@@ -167,6 +170,7 @@ class RarbgAPI(_RarbgAPIv2):
         super(RarbgAPI, self).__init__()
         self._token = None
         self._bucket = LeakyBucket(0.5)
+        self._log = logging.getLogger(__name__)
         default_options = {
             'retries': 5,
         }
