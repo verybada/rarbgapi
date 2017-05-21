@@ -2,7 +2,7 @@ import time
 import threading
 
 
-class LeakyBucket(object):
+class LeakyBucket(object):  # pylint: disable=too-few-public-methods
     def __init__(self, rate):
         self._rate = rate
         self._lock = threading.Lock()

@@ -1,5 +1,4 @@
 import time
-import logging
 
 import requests
 
@@ -10,6 +9,7 @@ class TokenExpireException(Exception):
     pass
 
 
+# pylint: disable=too-many-instance-attributes,too-few-public-methods
 class Torrent(object):
     '''
     brief
@@ -72,6 +72,7 @@ class _RarbgAPIv2(object):
         super(_RarbgAPIv2, self).__init__()
         self._endpoint = self.ENDPOINT
 
+    # pylint: disable=no-self-use
     def _requests(self, method, url, params=None):
         sess = requests.Session()
         req = requests.Request(method, url, params=params)
@@ -107,6 +108,7 @@ class _RarbgAPIv2(object):
 
 
 def request(func):
+    # pylint: disable=protected-access
     def wrapper(self, *args, **kwargs):
         max_retries = retries = self._options['retries']
         while retries > 0:
@@ -125,7 +127,7 @@ def request(func):
                 resp = self._get_token()
                 content = resp.json()
                 self._token = content['token']
-            except Exception as e:
+            except Exception:  # pylint: disable=broad-except
                 retries -= 1
                 if not retries:
                     raise
@@ -157,11 +159,3 @@ class RarbgAPI(_RarbgAPIv2):
     @request
     def search(self, **kwargs):
         return self._query('search', **kwargs)
-
-
-if __name__ == '__main__':
-    c = RarbgAPI()
-    # print c.search(string='2016', sort='last', limit=1, category=44,
-                   # format='json_extended')
-    l = c.search(sort='last', limit=100, category=44, format='json_extended')
-    print l[0]
