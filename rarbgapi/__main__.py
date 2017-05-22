@@ -18,7 +18,8 @@ def _show_categories():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--category-table', help='Get a list of category index',
+    parser.add_argument('--category-table',
+                        help='Get a list of category index',
                         action='store_true')
     parser.add_argument('--search-string', help='Query string')
     parser.add_argument('--sort',
