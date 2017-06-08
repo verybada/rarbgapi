@@ -55,7 +55,7 @@ class Torrent(object):
 
 def json_hook(dct):
     error_code = dct.get('error_code')
-    if error_code == 2:
+    if error_code in [2, 4]:
         raise TokenExpireException('Token expired')
     if 'download' in dct:
         return Torrent(dct)
