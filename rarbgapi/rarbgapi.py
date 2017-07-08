@@ -20,7 +20,7 @@ class Torrent(object):
         "download":"magnet:..."
     }
 
-    extened
+    extended
     {
         "title":"Off.Piste.2016.iNTERNAL.BDRip.x264-LiBRARiANS",
         "category":"Movies/x264",
