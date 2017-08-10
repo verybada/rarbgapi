@@ -101,6 +101,9 @@ class _RarbgAPIv2(object):
                            'category', 'format_']:
                 raise ValueError('unsupported parameter %s' % key)
 
+            if key == 'format_':
+                key = 'format'
+
             if value is None:
                 continue
 
