@@ -96,7 +96,7 @@ class _RarbgAPIv2(object):
             'mode': mode,
             'token': token
         }
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if key not in ['search_string', 'sort', 'limit',
                            'category', 'format_']:
                 raise ValueError('unsupported parameter %s' % key)
