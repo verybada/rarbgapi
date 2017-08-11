@@ -10,6 +10,10 @@ class TokenExpireException(Exception):
     pass
 
 
+class NoResultsException(Exception):
+    pass
+
+
 # pylint: disable=too-many-instance-attributes,too-few-public-methods
 class Torrent(object):
     '''
@@ -57,6 +61,8 @@ def json_hook(dct):
     error_code = dct.get('error_code')
     if error_code in [2, 4]:
         raise TokenExpireException('Token expired')
+    if error_code == 20:
+        raise NoResultsException('No results found')
     if 'download' in dct:
         return Torrent(dct)
     return dct
@@ -128,6 +134,8 @@ def request(func):
                 resp = func(self, token=self._token, *args, **kwargs)
                 json_ = resp.json(object_hook=json_hook)
                 return json_['torrent_results']
+            except NoResultsException:
+                return []
             except TokenExpireException:
                 resp = self._get_token()
                 content = resp.json()
