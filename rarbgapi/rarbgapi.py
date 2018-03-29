@@ -1,5 +1,6 @@
 import time
 import logging
+import platform
 
 import requests
 
@@ -74,15 +75,31 @@ class _RarbgAPIv2(object):
     https://torrentapi.org/apidocs_v2.txt
     '''
     ENDPOINT = 'http://torrentapi.org/pubapi_v2.php'
+    APP_ID = 'rarbgapi'
 
     def __init__(self):
         super(_RarbgAPIv2, self).__init__()
         self._endpoint = self.ENDPOINT
 
+    def _get_user_agent(self):
+        return '{appid}/0.1.1 ({uname}) python {pyver}'.format(
+            appid=self.APP_ID,
+            uname='; '.join(platform.uname()),
+            pyver=platform.python_version())
+
     # pylint: disable=no-self-use
     def _requests(self, method, url, params=None):
+        if not params:
+            params = dict()
+        params.update({
+            'app_id': self.APP_ID
+        })
+
+        headers = {
+            'user-agent': self._get_user_agent()
+        }
         sess = requests.Session()
-        req = requests.Request(method, url, params=params)
+        req = requests.Request(method, url, params=params, headers=headers)
         preq = req.prepare()
         resp = sess.send(preq)
         resp.raise_for_status()

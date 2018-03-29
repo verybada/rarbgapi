@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="RarbgAPI",
-    version="0.1",
+    version="0.1.1",
     author="verybada",
     author_email="verybada.lin@gmail.com",
     description=("A simple interface of RARBG.to"),
