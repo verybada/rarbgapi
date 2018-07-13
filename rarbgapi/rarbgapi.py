@@ -150,6 +150,8 @@ def request(func):
 
                 resp = func(self, token=self._token, *args, **kwargs)
                 json_ = resp.json(object_hook=json_hook)
+		if 'torrent_results' not in json_:
+		    self._log.info('Bad response %s', json_)
                 return json_['torrent_results']
             except NoResultsException:
                 return []
