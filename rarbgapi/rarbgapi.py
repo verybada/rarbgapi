@@ -138,7 +138,7 @@ class _RarbgAPIv2(object):
 
 
 def request(func):
-    # pylint: disable=protected-access
+    # pylint: disable=protected-access, too-many-branches
     def wrapper(self, *args, **kwargs):
         max_retries = retries = self._options['retries']
         while retries > 0:
@@ -155,14 +155,12 @@ def request(func):
                 error_code = json_.get('error_code')
                 if error_code:
                     if error_code == 5:
-                        '''
-                         {
-                             u'error_code': 5,
-                             u'error': u'Too many requests per second.
-                                    Maximum requests allowed are 1req/2sec
-                                    Please try again later!'
-                        }
-                        '''
+                        # {
+                        #     u'error_code': 5,
+                        #     u'error': u'Too many requests per second.
+                        #            Maximum requests allowed are 1req/2sec
+                        #            Please try again later!'
+                        # }
                         self._log.debug('Retry due to throttle')
                         continue
                     else:
@@ -185,8 +183,6 @@ def request(func):
                     raise
             else:
                 retries -= 1
-                if not retries:
-                    raise
             finally:
                 time.sleep(backoff)
 
