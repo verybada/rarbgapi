@@ -5,5 +5,5 @@ install:
   - pip install -e .
   - pip install -e .[travis]
 script:
-  - pep8 rarbgapi
+  - pycodestyle rarbgapi
   - pylint rarbgapi --rcfile=pylintrc

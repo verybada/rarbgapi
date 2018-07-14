@@ -20,7 +20,7 @@ setup(
         'requests'
     ],
     extras_require={
-        'travis': ['pep8', 'pylint']
+        'travis': ['pycodestyle', 'pylint']
     },
     url='https://github.com/verybada/rarbgapi/',
     entry_points={
