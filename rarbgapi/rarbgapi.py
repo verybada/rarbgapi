@@ -152,7 +152,23 @@ def request(func):
 
                 resp = func(self, token=self._token, *args, **kwargs)
                 json_ = resp.json(object_hook=json_hook)
-                if 'torrent_results' not in json_:
+                error_code = json_.get('error_code')
+                if error_code:
+                    if error_code == 5:
+                        '''
+                         {
+                             u'error_code': 5,
+                             u'error': u'Too many requests per second.
+                                    Maximum requests allowed are 1req/2sec
+                                    Please try again later!'
+                        }
+                        '''
+                        self._log.debug('Retry due to throttle')
+                        continue
+                    else:
+                        self._log.warn('error %s', json_)
+                        raise ValueError('error')
+                elif 'torrent_results' not in json_:
                     self._log.info('Bad response %s', json_)
                 return json_['torrent_results']
             except NoResultsException:
@@ -169,6 +185,8 @@ def request(func):
                     raise
             else:
                 retries -= 1
+                if not retries:
+                    raise
             finally:
                 time.sleep(backoff)
 
