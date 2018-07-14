@@ -2,6 +2,7 @@ import sys
 import logging
 import argparse
 
+
 from .rarbgapi import RarbgAPI
 
 
@@ -13,7 +14,7 @@ def _show_categories():
 
         category = name.replace(prefix, '')
         index = getattr(RarbgAPI, name)
-        print '%s -> %s' % (category, index)
+        print('%s -> %s' % (category, index))
 
 
 def main():
@@ -36,13 +37,13 @@ def main():
         return
 
     if args.verbose:
-        logging.basicConfig(output=sys.stdout, level=logging.DEBUG)
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
     client = RarbgAPI()
     torrents = client.search(search_string=args.search_string, sort=args.sort,
                              limit=args.limit, category=args.category)
     for torrent in torrents:
-        print "%s(%s) %s" % (torrent.filename, torrent.category,
-                             torrent.download)
+        print("%s(%s) %s" % (torrent.filename, torrent.category,
+                             torrent.download))
 
 sys.exit(main())
