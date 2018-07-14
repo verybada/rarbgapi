@@ -5,6 +5,7 @@ import platform
 import requests
 
 from .leakybucket import LeakyBucket
+from .__version__ import __version__
 
 
 class TokenExpireException(Exception):
@@ -82,8 +83,9 @@ class _RarbgAPIv2(object):
         self._endpoint = self.ENDPOINT
 
     def _get_user_agent(self):
-        return '{appid}/0.1.1 ({uname}) python {pyver}'.format(
+        return '{appid}/{version} ({uname}) python {pyver}'.format(
             appid=self.APP_ID,
+            version=__version__,
             uname='; '.join(platform.uname()),
             pyver=platform.python_version())
 
