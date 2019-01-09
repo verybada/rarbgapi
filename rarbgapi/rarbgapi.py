@@ -123,7 +123,8 @@ class _RarbgAPIv2(object):
         }
         for key, value in kwargs.items():
             if key not in ['search_string', 'sort', 'limit',
-                           'category', 'format_']:
+                           'category', 'format_', 'search_imdb',
+                           'search_tvdb', 'search_themoviedb']:
                 raise ValueError('unsupported parameter %s' % key)
 
             if key == 'format_':
