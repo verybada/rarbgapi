@@ -170,6 +170,9 @@ def request(func):
                 elif 'torrent_results' not in json_:
                     self._log.info('Bad response %s', json_)
                 return json_['torrent_results']
+            except ValueError:
+                # bad arguments, not necessary to retry
+                raise
             except NoResultsException:
                 return []
             except TokenExpireException:
@@ -178,7 +181,7 @@ def request(func):
                 self._token = content['token']
                 self._log.debug('token=%s', self._token)
             except Exception as exp:  # pylint: disable=broad-except
-                self._log.exception('Unexpected exceptin %s', exp)
+                self._log.exception('Unexpected exception %s', exp)
                 retries -= 1
                 if not retries:
                     raise
