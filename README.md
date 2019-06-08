@@ -7,6 +7,11 @@ This is a python3 wrapper for RARBG.to.
 
 The api object will automatically fetch/refresh the token and take care rate control (1 request/2 seconds)
 
+## Install
+```
+pip install rarbgapi
+```
+
 ## Quickstart
 
 List new torrents
