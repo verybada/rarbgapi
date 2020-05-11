@@ -41,7 +41,7 @@ Search torrents with specific keyword or imdb, tvdb and themoviedb index via `se
 
 or specific category
 ``` python
->>> client.search(search_string="walking dead", category=RarbgAPI.CATEGORY_TV_EPISODES)
+>>> client.search(search_string="walking dead", category=rarbgapi.RarbgAPI.CATEGORY_TV_EPISODES)
 ```
 
 ## options
