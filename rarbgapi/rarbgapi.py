@@ -154,7 +154,7 @@ def request(func):
                 resp = func(self, token=self._token, *args, **kwargs)
                 json_ = resp.json(object_hook=json_hook)
                 error_code = json_.get('error_code')
-                if error_code:
+                if error_code:  # pylint: disable=no-else-raise
                     if error_code == 5:
                         # {
                         #     u'error_code': 5,
