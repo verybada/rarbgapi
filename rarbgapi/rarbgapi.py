@@ -164,9 +164,9 @@ def request(func):
                         # }
                         self._log.debug('Retry due to throttle')
                         continue
-                    else:
-                        self._log.warn('error %s', json_)
-                        raise ValueError('error')
+
+                    self._log.warn('error %s', json_)
+                    raise ValueError('error')
                 elif 'torrent_results' not in json_:
                     self._log.info('Bad response %s', json_)
                 return json_['torrent_results']
