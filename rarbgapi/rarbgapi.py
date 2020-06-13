@@ -58,6 +58,12 @@ class Torrent(object):
     def __str__(self):
         return '%s(%s)' % (self.filename, self.category)
 
+    def __getattr__(self, key):
+        value = self._raw.get(key)
+        if value is None:
+            raise KeyError('%s not exists', key)
+        return value
+
 
 def json_hook(dct):
     error_code = dct.get('error_code')
@@ -152,8 +158,8 @@ def request(func):
                     raise TokenExpireException('Empty token')
 
                 resp = func(self, token=self._token, *args, **kwargs)
-                json_ = resp.json(object_hook=json_hook)
-                error_code = json_.get('error_code')
+                body = resp.json(object_hook=json_hook)
+                error_code = body.get('error_code')
                 if error_code:  # pylint: disable=no-else-raise
                     if error_code == 5:
                         # {
@@ -165,11 +171,11 @@ def request(func):
                         self._log.debug('Retry due to throttle')
                         continue
 
-                    self._log.warn('error %s', json_)
+                    self._log.warn('error %s', body)
                     raise ValueError('error')
-                elif 'torrent_results' not in json_:
-                    self._log.info('Bad response %s', json_)
-                return json_['torrent_results']
+                elif 'torrent_results' not in body:
+                    self._log.info('Bad response %s', body)
+                return body['torrent_results']
             except ValueError:
                 # bad arguments, not necessary to retry
                 raise
