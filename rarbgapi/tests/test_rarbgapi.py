@@ -28,43 +28,34 @@ def expected_headers(client):
 
 
 @pytest.fixture
-def expected_query_strings():
-    return {
-        'app_id': DUMMY_APP_ID,
-        'token': DUMMY_TOKEN,
-    }
-
-
-@pytest.fixture
 def empty_response():
     return {
         'torrent_results': [],
     }
 
 
-QUERY_STRING_VALUE = 'qs_value'
+QUERY_STRING_VALUE = 'json'
 SUPPORTED_ARGS = [
-        'search_string', 'sort', 'limit', 'category', 'format_', 'search_imdb',
-        'search_tvdb', 'search_themoviedb',
+        'format_', 'sort', 'limit', 'category',
+        'search_string', 'search_tvdb', 'search_themoviedb', 'search_imdb',
     ]
-@pytest.mark.parametrize(
-    'mode', ['list', 'search']
-)
-@pytest.mark.parametrize(
-    'supported_arg', SUPPORTED_ARGS
-)
+
+
+@pytest.mark.parametrize('mode', ['list', 'search'])
+@pytest.mark.parametrize('supported_arg', SUPPORTED_ARGS)
 def test_supported_arg(
         httpserver, client,
-        expected_headers, expected_query_strings, empty_response,
+        expected_headers, empty_response,
         mode, supported_arg):
-    expected_query_strings['mode'] = mode
     key = input_arg_to_query_string_key(supported_arg)
-    expected_query_strings[key] = QUERY_STRING_VALUE
-
     httpserver.expect_request(
         "/",
         headers=expected_headers,
-        query_string=expected_query_strings,
+        query_string={
+            'app_id': DUMMY_APP_ID, 'token': DUMMY_TOKEN,
+            'mode': mode, key: QUERY_STRING_VALUE,
+        },
+        handler_type=pytest_httpserver.httpserver.HandlerType.PERMANENT,
     ).respond_with_json(empty_response)
 
     func = getattr(client, mode)
@@ -112,7 +103,7 @@ def test_refresh_token(
         "/",
         headers=expected_headers,
         query_string={
-            'token': token, 'app_id': DUMMY_APP_ID, 'mode': mode ,
+            'token': token, 'app_id': DUMMY_APP_ID, 'mode': mode,
         },
         handler_type=pytest_httpserver.httpserver.HandlerType.ORDERED
     ).respond_with_json(empty_response)
@@ -139,6 +130,7 @@ def test_empty_error(
     func = getattr(client, mode)
     assert func and func() == []
 
+
 @pytest.mark.parametrize(
     'mode', ['list', 'search']
 )
@@ -163,6 +155,7 @@ def test_throttle_error(
 
     func = getattr(client, mode)
     assert func and func() == []
+
 
 @pytest.mark.parametrize(
     'mode', ['list', 'search']
@@ -225,6 +218,8 @@ def test_torrents(
         assert torrent.size is None
         assert torrent.pubdate is None
         assert torrent.page is None
+        assert torrent.seeders is None
+        assert torrent.leechers is None
 
 
 @pytest.mark.parametrize(
@@ -233,21 +228,21 @@ def test_torrents(
 def test_extended_torrents(
         httpserver, client, expected_headers, mode):
     torrent_json = {
-        "title":"torrent",
-        "category":"Movies/x264",
-        "download":"download_link",
-        "seeders":12,
-        "leechers":6,
-        "size":504519520,
-        "pubdate":"2017-05-21 02:13:49 +0000",
-        "episode_info":{
-            "imdb":"tt4443856",
+        "title": "torrent",
+        "category": "Movies/x264",
+        "download": "download_link",
+        "seeders": 12,
+        "leechers": 6,
+        "size": 504519520,
+        "pubdate": "2017-05-21 02:13:49 +0000",
+        "episode_info": {
+            "imdb": "tt4443856",
             "tvrage": None,
             "tvdb": None,
-            "themoviedb":"430293"
+            "themoviedb": "430293"
         },
-        "ranked":1,
-        "info_page":"https://torrentapi.org/...."
+        "ranked": 1,
+        "info_page": "https://torrentapi.org/...."
     }
     httpserver.expect_request(
         "/",
@@ -274,3 +269,5 @@ def test_extended_torrents(
         assert torrent.size == 504519520
         assert torrent.pubdate == "2017-05-21 02:13:49 +0000"
         assert torrent.page == "https://torrentapi.org/...."
+        assert torrent.seeders == 12
+        assert torrent.leechers == 6

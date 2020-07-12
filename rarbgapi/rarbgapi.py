@@ -8,14 +8,6 @@ from .leakybucket import LeakyBucket
 from .__version__ import __version__
 
 
-class TokenExpireException(Exception):
-    pass
-
-
-class NoResultsException(Exception):
-    pass
-
-
 # pylint: disable=too-many-instance-attributes,too-few-public-methods
 class Torrent(object):
     '''
@@ -54,6 +46,8 @@ class Torrent(object):
         self.size = self._raw.get('size')
         self.pubdate = self._raw.get('pubdate')
         self.page = self._raw.get('info_page')
+        self.seeders = self._raw.get('seeders')
+        self.leechers = self._raw.get('leechers')
 
     def __str__(self):
         return '%s(%s)' % (self.filename, self.category)
@@ -61,16 +55,11 @@ class Torrent(object):
     def __getattr__(self, key):
         value = self._raw.get(key)
         if value is None:
-            raise KeyError('%s not exists', key)
+            raise KeyError('%s not exists' % key)
         return value
 
 
 def json_hook(dct):
-    error_code = dct.get('error_code')
-    if error_code in [2, 4]:
-        raise TokenExpireException('Token expired')
-    if error_code == 20:
-        raise NoResultsException('No results found')
     if 'download' in dct:
         return Torrent(dct)
     return dct
@@ -86,6 +75,7 @@ class _RarbgAPIv2(object):
 
     def __init__(self):
         super(_RarbgAPIv2, self).__init__()
+        self._token = None
         self._endpoint = self.ENDPOINT
 
     def _get_user_agent(self):
@@ -94,6 +84,45 @@ class _RarbgAPIv2(object):
             version=__version__,
             uname='; '.join(platform.uname()),
             pyver=platform.python_version())
+
+    def _get_token(self):
+        '''
+        {"token":"xxxxx"}
+        '''
+        params = {
+            'get_token': 'get_token'
+        }
+        return self._requests('GET', self._endpoint, params)
+
+    def _query(self, mode, **kwargs):
+        params = {
+            'mode': mode,
+            'token': self._token
+        }
+
+        if 'extended_response' in kwargs:
+            params['format'] = 'json_extended' \
+                if kwargs['extended_response'] else 'json'
+            del kwargs['extended_response']
+
+        if 'categories' in kwargs:
+            params['category'] = ';'.join(kwargs['categories'])
+            del kwargs['categories']
+
+        for key, value in kwargs.items():
+            if key not in [
+                    'sort', 'limit',
+                    'search_string', 'search_imdb',
+                    'search_tvdb', 'search_themoviedb',
+            ]:
+                raise ValueError('unsupported parameter %s' % key)
+
+            if value is None:
+                continue
+
+            params[key] = value
+
+        return self._requests('GET', self._endpoint, params)
 
     # pylint: disable=no-self-use
     def _requests(self, method, url, params=None):
@@ -113,35 +142,9 @@ class _RarbgAPIv2(object):
         resp.raise_for_status()
         return resp
 
-    def _get_token(self):
-        '''
-        {"token":"xxxxx"}
-        '''
-        params = {
-            'get_token': 'get_token'
-        }
-        return self._requests('GET', self._endpoint, params)
 
-    def _query(self, mode, token=None, **kwargs):
-        params = {
-            'mode': mode,
-            'token': token
-        }
-        for key, value in kwargs.items():
-            if key not in ['search_string', 'sort', 'limit',
-                           'category', 'format_', 'search_imdb',
-                           'search_tvdb', 'search_themoviedb']:
-                raise ValueError('unsupported parameter %s' % key)
-
-            if key == 'format_':
-                key = 'format'
-
-            if value is None:
-                continue
-
-            params[key] = value
-
-        return self._requests('GET', self._endpoint, params)
+class TokenExpireException(Exception):
+    pass
 
 
 def request(func):
@@ -157,11 +160,13 @@ def request(func):
                 if not self._token:
                     raise TokenExpireException('Empty token')
 
-                resp = func(self, token=self._token, *args, **kwargs)
+                resp = func(self, *args, **kwargs)
                 body = resp.json(object_hook=json_hook)
                 error_code = body.get('error_code')
                 if error_code:  # pylint: disable=no-else-raise
-                    if error_code == 5:
+                    if error_code in [2, 4]:  # pylint: disable=no-else-raise
+                        raise TokenExpireException('Token expired')
+                    elif error_code == 5:
                         # {
                         #     u'error_code': 5,
                         #     u'error': u'Too many requests per second.
@@ -170,6 +175,8 @@ def request(func):
                         # }
                         self._log.debug('Retry due to throttle')
                         continue
+                    elif error_code == 20:
+                        return []
 
                     self._log.warn('error %s', body)
                     raise ValueError('error')
@@ -179,8 +186,6 @@ def request(func):
             except ValueError:
                 # bad arguments, not necessary to retry
                 raise
-            except NoResultsException:
-                return []
             except TokenExpireException:
                 resp = self._get_token()
                 content = resp.json()
@@ -229,7 +234,6 @@ class RarbgAPI(_RarbgAPIv2):
 
     def __init__(self, **options):
         super(RarbgAPI, self).__init__()
-        self._token = None
         self._bucket = LeakyBucket(0.5)
         self._log = logging.getLogger(__name__)
         default_options = {
@@ -240,17 +244,66 @@ class RarbgAPI(_RarbgAPIv2):
         self._options = default_options
 
     @request
-    # pylint: disable=too-many-arguments
-    def list(self, search_string=None, sort=None, limit=None,
-             category=None, format_=None, **kwargs):
-        return self._query('list', search_string=search_string, sort=sort,
-                           limit=limit, category=category, format_=format_,
-                           **kwargs)
+    def list(self, **kwargs):
+        """
+        List torrents.
+
+        :param sort: (optional) sort torrents, possibile values are
+                'seeders', 'leechers' or 'last'
+        :param limit: (optional) limit how many torrents will be returned,
+                possibile values are 25, 50 or 100
+        :param categories: (optional) what kind of torrents should be listed,
+                categories should be a list of int
+        :param search_string: (optional)
+        :param search_imdb: (optional)
+        :param search_tvdb: (optional)
+        :param search_themoviedb: (optional)
+        :param extended_response: (optional) return full context of torrent,
+                default is False
+        :param category: (optional) DEPRECATED, please use categories instead
+        :param format_: (optional) DEPRECATED, please use extended_response
+                instead
+
+        :returns: a list of Torrents
+
+        :raises: ValueError
+        """
+        return self._query('list', **self.backward_compability(kwargs))
 
     @request
-    # pylint: disable=too-many-arguments
-    def search(self, search_string=None, sort=None, limit=None,
-               category=None, format_=None, **kwargs):
-        return self._query('search', search_string=search_string,
-                           sort=sort, limit=limit, category=category,
-                           format_=format_, **kwargs)
+    def search(self, **kwargs):
+        """
+        Search torrents.
+
+        :param sort: (optional) sort torrents, possibile values are
+                'seeders', 'leechers' or 'last'
+        :param limit: (optional) limit how many torrents will be returned,
+                possibile values are 25, 50 or 100
+        :param categories: (optional) what kind of torrents should be
+                searched, categories should be a list of int
+        :param search_string: (optional)
+        :param search_imdb: (optional)
+        :param search_tvdb: (optional)
+        :param search_themoviedb: (optional)
+        :param extended_response: (optional) return full context of torrent,
+                default is False
+        :param category: (optional) DEPRECATED, please use categories instead
+        :param format_: (optional) DEPRECATED, please use extended_response
+                instead
+
+        :returns: a list of Torrents
+
+        :raises: ValueError
+        """
+        return self._query('search', **self.backward_compability(kwargs))
+
+    def backward_compability(self, kwargs):  # pylint: disable=no-self-use
+        value = kwargs.pop('format_', None)
+        if value:
+            kwargs['extended_response'] = (value == 'json_extended')
+
+        value = kwargs.pop('category', None)
+        if value:
+            kwargs['categories'] = [value, ]
+
+        return kwargs
