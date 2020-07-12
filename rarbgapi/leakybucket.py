@@ -13,7 +13,7 @@ class LeakyBucket(object):  # pylint: disable=too-few-public-methods
         delay = 1
         while True:
             with self._lock:  # pylint: disable=not-context-manager
-                now = int(time.time())
+                now = time.time()
                 diff = now - self._last_time
                 if diff:
                     self._token += self._rate * diff
