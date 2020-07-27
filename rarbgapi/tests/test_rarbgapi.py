@@ -76,7 +76,7 @@ def test_arg_categories(
     ).respond_with_json(empty_response)
 
     func = getattr(client, mode)
-    assert func and func(categories=[1,2,3]) == []
+    assert func and func(categories=[1, 2, 3]) == []
 
 
 def input_arg_to_query_string_key(arg):

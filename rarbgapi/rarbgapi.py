@@ -124,6 +124,7 @@ class _RarbgAPIv2(object):
             params[key] = value
 
         return self._requests('GET', self._endpoint, params)
+
     # pylint: disable=no-self-use
     def _requests(self, method, url, params=None):
         if not params:
