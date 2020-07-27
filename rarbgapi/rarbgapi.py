@@ -106,7 +106,8 @@ class _RarbgAPIv2(object):
             del kwargs['extended_response']
 
         if 'categories' in kwargs:
-            params['category'] = ';'.join(kwargs['categories'])
+            params['category'] = ';'.join(
+                [str(c) for c in kwargs['categories']])
             del kwargs['categories']
 
         for key, value in kwargs.items():
@@ -123,7 +124,6 @@ class _RarbgAPIv2(object):
             params[key] = value
 
         return self._requests('GET', self._endpoint, params)
-
     # pylint: disable=no-self-use
     def _requests(self, method, url, params=None):
         if not params:

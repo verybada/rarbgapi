@@ -62,6 +62,23 @@ def test_supported_arg(
     assert func and func(**{supported_arg: QUERY_STRING_VALUE}) == []
 
 
+@pytest.mark.parametrize('mode', ['list', 'search'])
+def test_arg_categories(
+        httpserver, client, expected_headers, empty_response, mode):
+    httpserver.expect_request(
+        "/",
+        headers=expected_headers,
+        query_string={
+            'app_id': DUMMY_APP_ID, 'token': DUMMY_TOKEN,
+            'mode': mode, 'category': '1;2;3',
+        },
+        handler_type=pytest_httpserver.httpserver.HandlerType.PERMANENT,
+    ).respond_with_json(empty_response)
+
+    func = getattr(client, mode)
+    assert func and func(categories=[1,2,3]) == []
+
+
 def input_arg_to_query_string_key(arg):
     if arg == 'format_':
         return 'format'
