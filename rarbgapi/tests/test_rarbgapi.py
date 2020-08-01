@@ -238,6 +238,9 @@ def test_torrents(
         assert torrent.seeders is None
         assert torrent.leechers is None
 
+        with pytest.raises(AttributeError):
+            torrent.foobar
+
 
 @pytest.mark.parametrize(
     'mode', ['list', 'search']
@@ -288,3 +291,6 @@ def test_extended_torrents(
         assert torrent.page == "https://torrentapi.org/...."
         assert torrent.seeders == 12
         assert torrent.leechers == 6
+
+        with pytest.raises(AttributeError):
+            torrent.foobar
