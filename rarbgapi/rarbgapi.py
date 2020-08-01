@@ -55,7 +55,7 @@ class Torrent(object):
     def __getattr__(self, key):
         value = self._raw.get(key)
         if value is None:
-            raise KeyError('%s not exists' % key)
+            raise AttributeError('%s not exists' % key)
         return value
 
 
