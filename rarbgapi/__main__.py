@@ -14,7 +14,7 @@ def _show_categories():
 
         category = name.replace(prefix, '')
         index = getattr(RarbgAPI, name)
-        print('%s -> %s' % (category, index))
+        print(f'{category} -> {index}')
 
 
 def main():
@@ -43,8 +43,7 @@ def main():
     torrents = client.search(search_string=args.search_string, sort=args.sort,
                              limit=args.limit, category=args.category)
     for torrent in torrents:
-        print("%s(%s) %s" % (torrent.filename, torrent.category,
-                             torrent.download))
+        print(f'{torrent.filename}({torrent.category}) {torrent.download}')
 
 
 sys.exit(main())

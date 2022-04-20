@@ -50,12 +50,12 @@ class Torrent(object):
         self.leechers = self._raw.get('leechers')
 
     def __str__(self):
-        return '%s(%s)' % (self.filename, self.category)
+        return f'{self.filename}(self.category)'
 
     def __getattr__(self, key):
         value = self._raw.get(key)
         if value is None:
-            raise AttributeError('%s not exists' % key)
+            raise AttributeError(f'{key} not exists')
         return value
 
 
@@ -74,16 +74,14 @@ class _RarbgAPIv2(object):
     APP_ID = 'rarbgapi'
 
     def __init__(self):
-        super(_RarbgAPIv2, self).__init__()
+        super().__init__()
         self._token = None
         self._endpoint = self.ENDPOINT
 
     def _get_user_agent(self):
-        return '{appid}/{version} ({uname}) python {pyver}'.format(
-            appid=self.APP_ID,
-            version=__version__,
-            uname='; '.join(platform.uname()),
-            pyver=platform.python_version())
+        uname = '; '.join(platform.uname())
+        pyver = platform.python_version()
+        return f'{self.APP_ID}/{__version__} ({uname}) python {pyver}'
 
     def _get_token(self):
         '''
@@ -116,7 +114,7 @@ class _RarbgAPIv2(object):
                     'search_string', 'search_imdb',
                     'search_tvdb', 'search_themoviedb',
             ]:
-                raise ValueError('unsupported parameter %s' % key)
+                raise ValueError(f'unsupported parameter {key}')
 
             if value is None:
                 continue
@@ -128,7 +126,7 @@ class _RarbgAPIv2(object):
     # pylint: disable=no-self-use
     def _requests(self, method, url, params=None):
         if not params:
-            params = dict()
+            params = {}
         params.update({
             'app_id': self.APP_ID
         })
@@ -234,7 +232,7 @@ class RarbgAPI(_RarbgAPIv2):
     CATEGORY_EBOOK = 35
 
     def __init__(self, **options):
-        super(RarbgAPI, self).__init__()
+        super().__init__()
         self._bucket = LeakyBucket(0.5)
         self._log = logging.getLogger(__name__)
         default_options = {
