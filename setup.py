@@ -26,7 +26,7 @@ setup(
         'requests'
     ],
     extras_require={
-        'travis': ['pycodestyle', 'pylint']
+        'test': ['flake8', 'pycodestyle', 'pylint', 'pytest', 'pytest-cov', 'pytest-httpserver']
     },
     url='https://github.com/verybada/rarbgapi/',
     entry_points={
